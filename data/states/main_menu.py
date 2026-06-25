@@ -30,6 +30,8 @@ class Menu(tools._State):
         self.setup_background()
         self.setup_mario()
         self.setup_cursor()
+        pg.mixer.music.load(setup.MUSIC['title'])
+        pg.mixer.music.play(-1)
 
 
     def setup_cursor(self):
@@ -128,6 +130,7 @@ class Menu(tools._State):
         self.game_info[c.LEVEL_STATE] = None
 
         self.persist = self.game_info
+        pg.mixer.music.stop()
 
 
 
