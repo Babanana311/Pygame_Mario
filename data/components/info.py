@@ -297,7 +297,7 @@ class OverheadInfo(object):
         if self.state == c.FAST_COUNT_DOWN:
             self.time -= 1
 
-        elif (level_info[c.CURRENT_TIME] - self.current_time) > 400:
+        elif (level_info[c.CURRENT_TIME] - self.current_time) > 1000:
             self.current_time = level_info[c.CURRENT_TIME]
             self.time -= 1
         self.count_down_images = []
