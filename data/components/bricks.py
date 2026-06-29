@@ -1,3 +1,11 @@
+"""
+砖块系统模块
+
+包含：
+- Brick 类：可破坏砖块，支持弹跳和碎裂
+- BrickPiece 类：砖块碎片，碎裂后飞出
+"""
+
 import pygame as pg
 from .. import setup
 from .. import constants as c
@@ -6,9 +14,9 @@ from . import coin
 
 
 class Brick(pg.sprite.Sprite):
-    """Bricks that can be destroyed"""
+    """可破坏砖块：含金币或道具，大Mario可击碎"""
     def __init__(self, x, y, contents=None, powerup_group=None, name='brick'):
-        """Initialize the object"""
+        """初始化砖块位置、内容物和碰撞属性"""
         pg.sprite.Sprite.__init__(self)
         self.sprite_sheet = setup.GFX['tile_set']
 
@@ -33,7 +41,7 @@ class Brick(pg.sprite.Sprite):
 
 
     def get_image(self, x, y, width, height):
-        """Extracts the image from the sprite sheet"""
+        """从精灵表中提取图片并缩放"""
         image = pg.Surface([width, height]).convert()
         rect = image.get_rect()
 
@@ -46,13 +54,13 @@ class Brick(pg.sprite.Sprite):
 
 
     def setup_frames(self):
-        """Set the frames to a list"""
+        """设置动画帧列表"""
         self.frames.append(self.get_image(16, 0, 16, 16))
         self.frames.append(self.get_image(432, 0, 16, 16))
 
 
     def setup_contents(self):
-        """Put 6 coins in contents if needed"""
+        """初始化内容物（6金币模式设置计数）"""
         if self.contents == '6coins':
             self.coin_total = 6
         else:
@@ -60,12 +68,12 @@ class Brick(pg.sprite.Sprite):
 
 
     def update(self):
-        """Updates the brick"""
+        """每帧更新砖块状态"""
         self.handle_states()
 
 
     def handle_states(self):
-        """Determines brick behavior based on state"""
+        """根据状态分发砖块行为"""
         if self.state == c.RESTING:
             self.resting()
         elif self.state == c.BUMPED:
@@ -75,14 +83,14 @@ class Brick(pg.sprite.Sprite):
 
 
     def resting(self):
-        """State when not moving"""
+        """静止状态：检查金币是否已耗尽"""
         if self.contents == '6coins':
             if self.coin_total == 0:
                 self.state == c.OPENED
 
 
     def bumped(self):
-        """Action during a BUMPED state"""
+        """被撞击状态：弹起后落下"""
         self.rect.y += self.y_vel
         self.y_vel += self.gravity
 
@@ -100,7 +108,7 @@ class Brick(pg.sprite.Sprite):
 
 
     def start_bump(self, score_group):
-        """Transitions brick into BUMPED state"""
+        """触发撞击：弹出内容物并进入 BUMPED 状态"""
         self.y_vel = -6
 
         if self.contents == '6coins':
@@ -121,7 +129,7 @@ class Brick(pg.sprite.Sprite):
 
 
     def opened(self):
-        """Action during OPENED state"""
+        """已打开状态：变为空方块外观"""
         self.frame_index = 1
         self.image = self.frames[self.frame_index]
 
@@ -131,7 +139,7 @@ class Brick(pg.sprite.Sprite):
 
 
 class BrickPiece(pg.sprite.Sprite):
-    """Pieces that appear when bricks are broken"""
+    """砖块碎片：砖块被破坏后向四周飞出"""
     def __init__(self, x, y, xvel, yvel):
         super(BrickPiece, self).__init__()
         self.sprite_sheet = setup.GFX['item_objects']
@@ -147,7 +155,7 @@ class BrickPiece(pg.sprite.Sprite):
 
 
     def setup_frames(self):
-        """create the frame list"""
+        """创建碎片帧列表"""
         self.frames = []
 
         image = self.get_image(68, 20, 8, 8)
@@ -158,7 +166,7 @@ class BrickPiece(pg.sprite.Sprite):
 
 
     def get_image(self, x, y, width, height):
-        """Extract image from sprite sheet"""
+        """从精灵表中提取碎片图片"""
         image = pg.Surface([width, height]).convert()
         rect = image.get_rect()
 
@@ -171,14 +179,14 @@ class BrickPiece(pg.sprite.Sprite):
 
 
     def update(self):
-        """Update brick piece"""
+        """更新碎片位置，应用重力"""
         self.rect.x += self.x_vel
         self.rect.y += self.y_vel
         self.y_vel += self.gravity
         self.check_if_off_screen()
 
     def check_if_off_screen(self):
-        """Remove from sprite groups if off screen"""
+        """超出屏幕时移除碎片"""
         if self.rect.y > c.SCREEN_HEIGHT:
             self.kill()
 

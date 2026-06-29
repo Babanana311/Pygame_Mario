@@ -1,3 +1,16 @@
+"""
+Level1 关卡状态模块
+
+游戏核心逻辑所在，负责：
+- 关卡元素初始化（地形、敌人、道具、检查点）
+- 碰撞检测与响应（X轴和Y轴分开处理）
+- 精灵位置调整（Mario、敌人、龟壳、道具）
+
+
+碰撞检测流程：
+  adjust_mario_position() → check_mario_x_collisions() → check_mario_y_collisions()
+"""
+
 from __future__ import division
 
 
@@ -18,11 +31,17 @@ from .. components import castle_flag
 
 
 class Level1(tools._State):
+    """
+    关卡1 游戏状态
+
+    包含关卡全部逻辑：地形、敌人生成、碰撞、过关判定。
+    是游戏中最复杂的类，管理所有精灵组和物理交互。
+    """
     def __init__(self):
         tools._State.__init__(self)
 
     def startup(self, current_time, persist):
-        """Called when the State object is created"""
+        """关卡启动：初始化所有关卡元素"""
         self.game_info = persist
         self.persist = self.game_info
         self.game_info[c.CURRENT_TIME] = current_time
@@ -53,8 +72,7 @@ class Level1(tools._State):
 
 
     def setup_background(self):
-        """Sets the background image, rect and scales it to the correct
-        proportions"""
+        """设置背景图片并缩放"""
         self.background = setup.GFX['level_1']
         self.back_rect = self.background.get_rect()
         self.background = pg.transform.scale(self.background,
@@ -71,8 +89,7 @@ class Level1(tools._State):
 
 
     def setup_ground(self):
-        """Creates collideable, invisible rectangles over top of the ground for
-        sprites to walk on"""
+        """创建地面碰撞体（不可见矩形）"""
         ground_rect1 = collider.Collider(0, c.GROUND_HEIGHT,    2953, 60)
         ground_rect2 = collider.Collider(3048, c.GROUND_HEIGHT,  635, 60)
         ground_rect3 = collider.Collider(3819, c.GROUND_HEIGHT, 2735, 60)
@@ -85,7 +102,7 @@ class Level1(tools._State):
 
 
     def setup_pipes(self):
-        """Create collideable rects for all the pipes"""
+        """创建管道碰撞体"""
 
         pipe1 = collider.Collider(1202, 452, 83, 82)
         pipe2 = collider.Collider(1631, 409, 83, 140)
@@ -100,7 +117,7 @@ class Level1(tools._State):
 
 
     def setup_steps(self):
-        """Create collideable rects for all the steps"""
+        """创建台阶碰撞体"""
         step1 = collider.Collider(5745, 495, 40, 44)
         step2 = collider.Collider(5788, 452, 40, 44)
         step3 = collider.Collider(5831, 409, 40, 44)
@@ -152,8 +169,7 @@ class Level1(tools._State):
 
 
     def setup_bricks(self):
-        """Creates all the breakable bricks for the level.  Coin and
-        powerup groups are created so they can be passed to bricks."""
+        """创建所有可破坏砖块"""
         self.coin_group = pg.sprite.Group()
         self.powerup_group = pg.sprite.Group()
         self.brick_pieces_group = pg.sprite.Group()
@@ -209,7 +225,7 @@ class Level1(tools._State):
 
 
     def setup_coin_boxes(self):
-        """Creates all the coin boxes and puts them in a sprite group"""
+        """创建所有问号方块"""
         coin_box1  = coin_box.Coin_box(685, 365, c.COIN, self.coin_group)
         coin_box2  = coin_box.Coin_box(901, 365, c.MUSHROOM, self.powerup_group)
         coin_box3  = coin_box.Coin_box(987, 365, c.COIN, self.coin_group)
@@ -232,7 +248,7 @@ class Level1(tools._State):
 
 
     def setup_flag_pole(self):
-        """Creates the flag pole at the end of the level"""
+        """创建关卡终点的旗杆"""
         self.flag = flagpole.Flag(8505, 100)
 
         pole0 = flagpole.Pole(8505, 97)
@@ -263,7 +279,7 @@ class Level1(tools._State):
 
 
     def setup_enemies(self):
-        """Creates all the enemies and stores them in a list of lists."""
+        """创建所有敌人并存入列表（用于检查点逐批生成）"""
         goomba0 = enemies.Goomba()
         goomba1 = enemies.Goomba()
         goomba2 = enemies.Goomba()
@@ -307,15 +323,14 @@ class Level1(tools._State):
 
 
     def setup_mario(self):
-        """Places Mario at the beginning of the level"""
+        """在关卡起始位置放置Mario"""
         self.mario = mario.Mario()
         self.mario.rect.x = self.viewport.x + 110
         self.mario.rect.bottom = c.GROUND_HEIGHT
 
 
     def setup_checkpoints(self):
-        """Creates invisible checkpoints that when collided will trigger
-        the creation of enemies from the self.enemy_group_list"""
+        """创建不可见检查点，触发敌人生成"""
         check1 = checkpoint.Checkpoint(510, "1")
         check2 = checkpoint.Checkpoint(1400, '2')
         check3 = checkpoint.Checkpoint(1740, '3')
@@ -338,7 +353,7 @@ class Level1(tools._State):
 
 
     def setup_spritegroups(self):
-        """Sprite groups created for convenience"""
+        """创建精灵组以便碰撞检测"""
         self.sprites_about_to_die_group = pg.sprite.Group()
         self.shell_group = pg.sprite.Group()
         self.enemy_group = pg.sprite.Group()
@@ -352,7 +367,8 @@ class Level1(tools._State):
 
 
     def update(self, surface, keys, current_time):
-        """Updates Entire level using states.  Called by the control object"""
+        """关卡主更新：状态处理 → 碰撞检测 → 渲染"""
+        """关卡主更新：状态处理 → 碰撞检测 → 渲染"""
         self.game_info[c.CURRENT_TIME] = self.current_time = current_time
         self.handle_states(keys)
         self.check_if_time_out()
@@ -362,7 +378,7 @@ class Level1(tools._State):
 
 
     def handle_states(self, keys):
-        """If the level is in a FROZEN state, only mario will update"""
+        """关卡状态处理：FROZEN时只更新Mario"""
         if self.state == c.FROZEN:
             self.update_during_transition_state(keys)
         elif self.state == c.NOT_FROZEN:
@@ -402,7 +418,7 @@ class Level1(tools._State):
 
 
     def update_all_sprites(self, keys):
-        """Updates the location of all sprites on the screen."""
+        """更新所有精灵位置和碰撞"""
         self.mario.update(keys, self.game_info, self.powerup_group)
         for score in self.moving_score_list:
             score.update(self.moving_score_list, self.game_info)
@@ -427,8 +443,7 @@ class Level1(tools._State):
 
 
     def check_points_check(self):
-        """Detect if checkpoint collision occurs, delete checkpoint,
-        add enemies to self.enemy_group"""
+        """检测检查点碰撞，生成敌人"""
         checkpoint = pg.sprite.spritecollideany(self.mario,
                                                  self.check_point_group)
         if checkpoint:
@@ -473,8 +488,7 @@ class Level1(tools._State):
 
 
     def create_flag_points(self):
-        """Creates the points that appear when Mario touches the
-        flag pole"""
+        """创建Mario触碰旗杆后的浮动分数"""
         x = 8518
         y = c.GROUND_HEIGHT - 60
         mario_bottom = self.mario.rect.bottom
@@ -497,7 +511,7 @@ class Level1(tools._State):
 
 
     def adjust_sprite_positions(self):
-        """Adjusts sprites by their x and y velocities and collisions"""
+        """调整精灵速度、位置和碰撞"""
         self.adjust_mario_position()
         self.adjust_enemy_position()
         self.adjust_shell_position()
@@ -505,9 +519,8 @@ class Level1(tools._State):
 
 
     def adjust_mario_position(self):
-        """Adjusts Mario's position based on his x, y velocities and
-        potential collisions"""
-        self.last_x_position = self.mario.rect.right
+        """调整Mario位置：先X轴移动+碰撞检测，再Y轴移动+碰撞检测。
+        分两轴独立检测避免同时碰撞时无法确定校正方向"""
         self.mario.rect.x += round(self.mario.x_vel)
         self.check_mario_x_collisions()
 
@@ -520,7 +533,7 @@ class Level1(tools._State):
 
 
     def check_mario_x_collisions(self):
-        """Check for collisions after Mario is moved on the x axis"""
+        """X轴碰撞检测"""
         collider = pg.sprite.spritecollideany(self.mario, self.ground_step_pipe_group)
         coin_box = pg.sprite.spritecollideany(self.mario, self.coin_box_group)
         brick = pg.sprite.spritecollideany(self.mario, self.brick_group)
@@ -632,7 +645,7 @@ class Level1(tools._State):
 
 
     def adjust_mario_for_x_collisions(self, collider):
-        """Puts Mario flush next to the collider after moving on the x axis"""
+        """X轴碰撞校正：将Mario推离碰撞体"""
         if self.mario.rect.x < collider.rect.x:
             self.mario.rect.right = collider.rect.left
         else:
@@ -642,7 +655,7 @@ class Level1(tools._State):
 
 
     def adjust_mario_for_x_shell_collisions(self, shell):
-        """Deals with Mario if he hits a shell moving on the x axis"""
+        """X轴龟壳碰撞处理"""
         if shell.state == c.JUMPED_ON:
             if self.mario.rect.x < shell.rect.x:
                 self.game_info[c.SCORE] += 400
@@ -681,7 +694,7 @@ class Level1(tools._State):
 
 
     def check_mario_y_collisions(self):
-        """Checks for collisions when Mario moves along the y-axis"""
+        """Y轴碰撞检测"""
         ground_step_or_pipe = pg.sprite.spritecollideany(self.mario, self.ground_step_pipe_group)
         enemy = pg.sprite.spritecollideany(self.mario, self.enemy_group)
         shell = pg.sprite.spritecollideany(self.mario, self.shell_group)
@@ -723,7 +736,7 @@ class Level1(tools._State):
 
 
     def prevent_collision_conflict(self, obstacle1, obstacle2):
-        """Allows collisions only for the item closest to marios centerx"""
+        """只检测距离Mario中心最近的物品碰撞"""
         if obstacle1 and obstacle2:
             obstacle1_distance = self.mario.rect.centerx - obstacle1.rect.centerx
             if obstacle1_distance < 0:
@@ -741,7 +754,7 @@ class Level1(tools._State):
 
 
     def adjust_mario_for_y_coin_box_collisions(self, coin_box):
-        """Mario collisions with coin boxes on the y-axis"""
+        """Y轴问号方块碰撞处理"""
         if self.mario.rect.y > coin_box.rect.y:
             if coin_box.state == c.RESTING:
                 if coin_box.contents == c.COIN:
@@ -765,7 +778,7 @@ class Level1(tools._State):
 
 
     def adjust_mario_for_y_brick_collisions(self, brick):
-        """Mario collisions with bricks on the y-axis"""
+        """Y轴砖块碰撞处理"""
         if self.mario.rect.y > brick.rect.y:
             if brick.state == c.RESTING:
                 if self.mario.big and brick.contents is None:
@@ -805,7 +818,7 @@ class Level1(tools._State):
 
 
     def check_if_enemy_on_brick(self, brick):
-        """Kills enemy if on a bumped or broken brick"""
+        """砖块弹起时击杀上方敌人"""
         brick.rect.y -= 5
 
         enemy = pg.sprite.spritecollideany(brick, self.enemy_group)
@@ -829,7 +842,7 @@ class Level1(tools._State):
 
 
     def adjust_mario_for_y_ground_pipe_collisions(self, collider):
-        """Mario collisions with pipes on the y-axis"""
+        """Y轴管道碰撞处理"""
         if collider.rect.bottom > self.mario.rect.bottom:
             self.mario.y_vel = 0
             self.mario.rect.bottom = collider.rect.top
@@ -870,7 +883,7 @@ class Level1(tools._State):
 
 
     def adjust_mario_for_y_enemy_collisions(self, enemy):
-        """Mario collisions with all enemies on the y-axis"""
+        """Y轴敌人碰撞处理（踩踏判定）"""
         if self.mario.y_vel > 0:
             setup.SFX['stomp'].play()
             self.game_info[c.SCORE] += 100
@@ -892,7 +905,7 @@ class Level1(tools._State):
 
 
     def adjust_mario_for_y_shell_collisions(self, shell):
-        """Mario collisions with Koopas in their shells on the y axis"""
+        """Y轴龟壳碰撞处理"""
         if self.mario.y_vel > 0:
             self.game_info[c.SCORE] += 400
             self.moving_score_list.append(
@@ -912,7 +925,7 @@ class Level1(tools._State):
 
 
     def adjust_enemy_position(self):
-        """Moves all enemies along the x, y axes and check for collisions"""
+        """更新所有敌人位置并检测碰撞"""
         for enemy in self.enemy_group:
             enemy.rect.x += enemy.x_vel
             self.check_enemy_x_collisions(enemy)
@@ -960,7 +973,7 @@ class Level1(tools._State):
 
 
     def check_enemy_y_collisions(self, enemy):
-        """Enemy collisions on the y axis"""
+        """敌人Y轴碰撞检测"""
         collider = pg.sprite.spritecollideany(enemy, self.ground_step_pipe_group)
         brick = pg.sprite.spritecollideany(enemy, self.brick_group)
         coin_box = pg.sprite.spritecollideany(enemy, self.coin_box_group)
@@ -1030,8 +1043,7 @@ class Level1(tools._State):
 
 
     def adjust_shell_position(self):
-        """Moves any koopa in a shell along the x, y axes and checks for
-        collisions"""
+        """更新龟壳位置并检测碰撞"""
         for shell in self.shell_group:
             shell.rect.x += shell.x_vel
             self.check_shell_x_collisions(shell)
@@ -1042,7 +1054,7 @@ class Level1(tools._State):
 
 
     def check_shell_x_collisions(self, shell):
-        """Shell collisions along the x axis"""
+        """龟壳X轴碰撞检测"""
         collider = pg.sprite.spritecollideany(shell, self.ground_step_pipe_group)
         enemy = pg.sprite.spritecollideany(shell, self.enemy_group)
 
@@ -1067,7 +1079,7 @@ class Level1(tools._State):
 
 
     def check_shell_y_collisions(self, shell):
-        """Shell collisions along the y axis"""
+        """龟壳Y轴碰撞检测"""
         collider = pg.sprite.spritecollideany(shell, self.ground_step_pipe_group)
 
         if collider:
@@ -1083,7 +1095,7 @@ class Level1(tools._State):
 
 
     def adjust_powerup_position(self):
-        """Moves mushrooms, stars and fireballs along the x, y axes"""
+        """更新所有道具和火球位置"""
         for powerup in self.powerup_group:
             if powerup.name == c.MUSHROOM:
                 self.adjust_mushroom_position(powerup)
@@ -1096,7 +1108,7 @@ class Level1(tools._State):
 
 
     def adjust_mushroom_position(self, mushroom):
-        """Moves mushroom along the x, y axes."""
+        """更新蘑菇位置并检测碰撞"""
         if mushroom.state != c.REVEAL:
             mushroom.rect.x += mushroom.x_vel
             self.check_mushroom_x_collisions(mushroom)
@@ -1107,7 +1119,7 @@ class Level1(tools._State):
 
 
     def check_mushroom_x_collisions(self, mushroom):
-        """Mushroom collisions along the x axis"""
+        """蘑菇X轴碰撞检测"""
         collider = pg.sprite.spritecollideany(mushroom, self.ground_step_pipe_group)
         brick = pg.sprite.spritecollideany(mushroom, self.brick_group)
         coin_box = pg.sprite.spritecollideany(mushroom, self.coin_box_group)
@@ -1123,7 +1135,7 @@ class Level1(tools._State):
 
 
     def check_mushroom_y_collisions(self, mushroom):
-        """Mushroom collisions along the y axis"""
+        """蘑菇Y轴碰撞检测"""
         collider = pg.sprite.spritecollideany(mushroom, self.ground_step_pipe_group)
         brick = pg.sprite.spritecollideany(mushroom, self.brick_group)
         coin_box = pg.sprite.spritecollideany(mushroom, self.coin_box_group)
@@ -1141,7 +1153,7 @@ class Level1(tools._State):
 
 
     def adjust_mushroom_for_collision_x(self, item, collider):
-        """Changes mushroom direction if collision along x axis"""
+        """蘑菇X轴碰撞后转向"""
         if item.rect.x < collider.rect.x:
             item.rect.right = collider.rect.x
             item.direction = c.LEFT
@@ -1151,14 +1163,14 @@ class Level1(tools._State):
 
 
     def adjust_mushroom_for_collision_y(self, item, collider):
-        """Changes mushroom state to SLIDE after hitting ground from fall"""
+        """蘑菇落地后进入滑动状态"""
         item.rect.bottom = collider.rect.y
         item.state = c.SLIDE
         item.y_vel = 0
 
 
     def adjust_star_position(self, star):
-        """Moves invincible star along x, y axes and checks for collisions"""
+        """更新无敌星位置并检测碰撞"""
         if star.state == c.BOUNCE:
             star.rect.x += star.x_vel
             self.check_mushroom_x_collisions(star)
@@ -1169,7 +1181,7 @@ class Level1(tools._State):
 
 
     def check_star_y_collisions(self, star):
-        """Invincible star collisions along y axis"""
+        """无敌星Y轴碰撞检测"""
         collider = pg.sprite.spritecollideany(star, self.ground_step_pipe_group)
         brick = pg.sprite.spritecollideany(star, self.brick_group)
         coin_box = pg.sprite.spritecollideany(star, self.coin_box_group)
@@ -1183,8 +1195,7 @@ class Level1(tools._State):
 
 
     def adjust_star_for_collision_y(self, star, collider):
-        """Allows for a star bounce off the ground and on the bottom of a
-        box"""
+        """无敌星从地面和方块底部弹跳"""
         if star.rect.y > collider.rect.y:
             star.rect.y = collider.rect.bottom
             star.y_vel = 0
@@ -1194,7 +1205,7 @@ class Level1(tools._State):
 
 
     def adjust_fireball_position(self, fireball):
-        """Moves fireball along the x, y axes and checks for collisions"""
+        """更新火球位置并检测碰撞"""
         if fireball.state == c.FLYING:
             fireball.rect.x += fireball.x_vel
             self.check_fireball_x_collisions(fireball)
@@ -1210,7 +1221,7 @@ class Level1(tools._State):
 
 
     def bounce_fireball(self, fireball):
-        """Simulates fireball bounce off ground"""
+        """模拟火球从地面弹跳"""
         fireball.y_vel = -8
         if fireball.direction == c.RIGHT:
             fireball.x_vel = 15
@@ -1222,7 +1233,7 @@ class Level1(tools._State):
 
 
     def check_fireball_x_collisions(self, fireball):
-        """Fireball collisions along x axis"""
+        """火球X轴碰撞检测"""
         collide_group = pg.sprite.Group(self.ground_group,
                                         self.pipe_group,
                                         self.step_group,
@@ -1239,7 +1250,7 @@ class Level1(tools._State):
 
 
     def check_fireball_y_collisions(self, fireball):
-        """Fireball collisions along y axis"""
+        """火球Y轴碰撞检测"""
         collide_group = pg.sprite.Group(self.ground_group,
                                         self.pipe_group,
                                         self.step_group,
@@ -1262,7 +1273,7 @@ class Level1(tools._State):
 
 
     def fireball_kill(self, fireball, enemy):
-        """Kills enemy if hit with fireball"""
+        """火球击中敌人时消灭敌人"""
         setup.SFX['kick'].play()
         self.game_info[c.SCORE] += 100
         self.moving_score_list.append(
@@ -1276,7 +1287,7 @@ class Level1(tools._State):
 
 
     def check_if_falling(self, sprite, sprite_group):
-        """Checks if sprite should enter a falling state"""
+        """检查精灵是否应进入下落状态"""
         sprite.rect.y += 1
 
         if pg.sprite.spritecollideany(sprite, sprite_group) is None:
@@ -1301,21 +1312,21 @@ class Level1(tools._State):
 
 
     def check_flag(self):
-        """Adjusts mario's state when the flag is at the bottom"""
+        """旗杆底部时调整Mario状态"""
         if (self.flag.state == c.BOTTOM_OF_POLE
             and self.mario.state == c.FLAGPOLE):
             self.mario.set_state_to_bottom_of_pole()
 
 
     def check_to_add_flag_score(self):
-        """Adds flag score if at top"""
+        """旗杆顶部时计算分数"""
         if self.flag_score.y_vel == 0:
             self.game_info[c.SCORE] += self.flag_score_total
             self.flag_score_total = 0
 
 
     def check_for_mario_death(self):
-        """Restarts the level if Mario is dead"""
+        """Mario死亡后重启关卡"""
         if self.mario.rect.y > c.SCREEN_HEIGHT and not self.mario.in_castle:
             self.mario.dead = True
             self.mario.x_vel = 0
@@ -1335,7 +1346,7 @@ class Level1(tools._State):
 
 
     def set_game_info_values(self):
-        """sets the new game values after a player's death"""
+        """设置玩家死亡后的新游戏数值"""
         if self.game_info[c.SCORE] > self.persist[c.TOP_SCORE]:
             self.persist[c.TOP_SCORE] = self.game_info[c.SCORE]
         if self.mario.dead:
@@ -1357,7 +1368,7 @@ class Level1(tools._State):
 
 
     def check_if_time_out(self):
-        """Check if time has run down to 0"""
+        """检查时间是否耗尽"""
         if self.overhead_info_display.time <= 0 \
                 and not self.mario.dead \
                 and not self.mario.in_castle:
@@ -1366,7 +1377,7 @@ class Level1(tools._State):
 
 
     def update_viewport(self):
-        """Changes the view of the camera"""
+        """更新摄像机视口位置"""
         third = self.viewport.x + self.viewport.w//3
         mario_center = self.mario.rect.centerx
         mario_right = self.mario.rect.right
@@ -1379,7 +1390,7 @@ class Level1(tools._State):
 
 
     def update_while_in_castle(self):
-        """Updates while Mario is in castle at the end of the level"""
+        """Mario进入城堡时更新"""
         for score in self.moving_score_list:
             score.update(self.moving_score_list, self.game_info)
         self.overhead_info_display.update(self.game_info)
@@ -1390,7 +1401,7 @@ class Level1(tools._State):
 
 
     def update_flag_and_fireworks(self):
-        """Updates the level for the fireworks and castle flag"""
+        """更新烟花和城堡旗帜"""
         for score in self.moving_score_list:
             score.update(self.moving_score_list, self.game_info)
         self.overhead_info_display.update(self.game_info)
@@ -1400,7 +1411,7 @@ class Level1(tools._State):
 
 
     def end_game(self):
-        """End the game"""
+        """游戏结束处理"""
         if self.flag_timer == 0:
             self.flag_timer = self.current_time
         elif (self.current_time - self.flag_timer) > 2000:
@@ -1411,7 +1422,7 @@ class Level1(tools._State):
 
 
     def blit_everything(self, surface):
-        """Blit all sprites to the main surface"""
+        """渲染所有精灵到主画面"""
         self.level.blit(self.background, self.viewport, self.viewport)
         if self.flag_score:
             self.flag_score.draw(self.level)

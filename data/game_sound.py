@@ -1,11 +1,18 @@
+"""
+音效管理模块
+
+包含 Sound 类：管理背景音乐切换和音效状态机。
+音乐状态：NORMAL → TIME_WARNING → SPED_UP_NORMAL → STAGE_CLEAR → WORLD_CLEAR
+"""
+
 import pygame as pg
 from . import setup
 from . import constants as c
 
 class Sound(object):
-    """Handles all sound for the game"""
+    """音效管理器：控制背景音乐和音效播放，根据游戏状态切换音乐"""
     def __init__(self, overhead_info):
-        """Initialize the class"""
+        """初始化音效管理器"""
         self.sfx_dict = setup.SFX
         self.music_dict = setup.MUSIC
         self.overhead_info = overhead_info
@@ -15,7 +22,7 @@ class Sound(object):
 
 
     def set_music_mixer(self):
-        """Sets music for level"""
+        """根据状态设置初始音乐"""
         if self.overhead_info.state == c.LEVEL:
             pg.mixer.music.load(self.music_dict['main_theme'])
             pg.mixer.music.play()
@@ -27,13 +34,13 @@ class Sound(object):
 
 
     def update(self, game_info, mario):
-        """Updates sound object with game info"""
+        """更新音效状态（每帧调用）"""
         self.game_info = game_info
         self.mario = mario
         self.handle_state()
 
     def  handle_state(self):
-        """Handles the state of the soundn object"""
+        """音效状态机：根据游戏状态切换音乐"""
         if self.state == c.NORMAL:
             if self.mario.dead:
                 self.play_music('death', c.MARIO_DEAD)
@@ -87,13 +94,13 @@ class Sound(object):
             pass
 
     def play_music(self, key, state):
-        """Plays new music"""
+        """加载并播放新音乐"""
         pg.mixer.music.load(self.music_dict[key])
         pg.mixer.music.play()
         self.state = state
 
     def stop_music(self):
-        """Stops playback"""
+        """停止音乐播放"""
         pg.mixer.music.stop()
 
 

@@ -1,12 +1,18 @@
+"""
+城堡旗帜模块
+
+关卡结束时城堡顶部的旗帜动画。
+"""
+
 import pygame as pg
 from .. import setup
 from .. import constants as c
 
 
 class Flag(pg.sprite.Sprite):
-    """Flag on the castle"""
+    """城堡旗帜：关卡结束时从城堡上升起"""
     def __init__(self, x, y):
-        """Initialize object"""
+        """初始化旗帜位置和上升速度"""
         super(Flag, self).__init__()
         self.sprite_sheet = setup.GFX['item_objects']
         self.image = self.get_image(129, 2, 14, 14)
@@ -19,7 +25,7 @@ class Flag(pg.sprite.Sprite):
 
 
     def get_image(self, x, y, width, height):
-        """Extracts image from sprite sheet"""
+        """从精灵表中提取旗帜图片"""
         image = pg.Surface([width, height])
         rect = image.get_rect()
 
@@ -31,18 +37,18 @@ class Flag(pg.sprite.Sprite):
         return image
 
     def update(self, *args):
-        """Updates flag position"""
+        """根据状态更新旗帜位置"""
         if self.state == 'rising':
             self.rising()
         elif self.state == 'resting':
             self.resting()
 
     def rising(self):
-        """State when flag is rising to be on the castle"""
+        """上升状态：旗帜向上移动"""
         self.rect.y += self.y_vel
         if self.rect.bottom <= self.target_height:
             self.state = 'resting'
 
     def resting(self):
-        """State when the flag is stationary doing nothing"""
+        """静止状态：旗帜已到达目标位置"""
         pass

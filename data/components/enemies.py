@@ -4,14 +4,28 @@ from .. import setup
 from .. import constants as c
 
 
+"""
+敌人系统模块
+
+包含：
+- Enemy 基类：巡逻AI、碰撞响应、死亡动画
+- Goomba 子类：栗子怪，踩扁后消失
+- Koopa 子类：乌龟，踩后变龟壳，可被踢动
+"""
+
+import pygame as pg
+from .. import setup
+from .. import constants as c
+
+
 class Enemy(pg.sprite.Sprite):
-    """Base class for all enemies (Goombas, Koopas, etc.)"""
+    """敌人基类：巡逻移动、碰撞响应、状态机"""
     def __init__(self):
         pg.sprite.Sprite.__init__(self)
 
 
     def setup_enemy(self, x, y, direction, name, setup_frames):
-        """Sets up various values for enemy"""
+        """初始化敌人属性：位置、方向和动画"""
         self.sprite_sheet = setup.GFX['smb_enemies_sheet']
         self.frames = []
         self.frame_index = 0
@@ -32,7 +46,7 @@ class Enemy(pg.sprite.Sprite):
 
 
     def set_velocity(self):
-        """Sets velocity vector based on direction"""
+        """根据方向设置水平速度"""
         if self.direction == c.LEFT:
             self.x_vel = -2
         else:
@@ -42,7 +56,7 @@ class Enemy(pg.sprite.Sprite):
 
 
     def get_image(self, x, y, width, height):
-        """Get the image frames from the sprite sheet"""
+        """从精灵表中提取图片帧"""
         image = pg.Surface([width, height]).convert()
         rect = image.get_rect()
 
@@ -57,7 +71,7 @@ class Enemy(pg.sprite.Sprite):
 
 
     def handle_state(self):
-        """Enemy behavior based on state"""
+        """根据状态分发敌人行为"""
         if self.state == c.WALK:
             self.walking()
         elif self.state == c.FALL:
@@ -71,7 +85,7 @@ class Enemy(pg.sprite.Sprite):
 
 
     def walking(self):
-        """Default state of moving sideways"""
+        """巡逻状态：水平移动，遇障碍转向"""
         if (self.current_time - self.animate_timer) > 125:
             if self.frame_index == 0:
                 self.frame_index += 1
@@ -82,18 +96,18 @@ class Enemy(pg.sprite.Sprite):
 
 
     def falling(self):
-        """For when it falls off a ledge"""
+        """下落状态：从边缘掉下"""
         if self.y_vel < 10:
             self.y_vel += self.gravity
 
 
     def jumped_on(self):
-        """Placeholder for when the enemy is stomped on"""
+        """被踩踏：敌方角色被踩扁的处理"""
         pass
 
 
     def death_jumping(self):
-        """Death animation"""
+        """死亡动画：翻转后下落消失"""
         self.rect.y += self.y_vel
         self.rect.x += self.x_vel
         self.y_vel += self.gravity
@@ -103,7 +117,7 @@ class Enemy(pg.sprite.Sprite):
 
 
     def start_death_jump(self, direction):
-        """Transitions enemy into a DEATH JUMP state"""
+        """进入死亡跳跃状态"""
         self.y_vel = -8
         if direction == c.RIGHT:
             self.x_vel = 2
@@ -116,12 +130,12 @@ class Enemy(pg.sprite.Sprite):
 
 
     def animation(self):
-        """Basic animation, switching between two frames"""
+        """基础动画：在两帧之间切换"""
         self.image = self.frames[self.frame_index]
 
 
     def update(self, game_info, *args):
-        """Updates enemy behavior"""
+        """每帧更新敌人状态和位置"""
         self.current_time = game_info[c.CURRENT_TIME]
         self.handle_state()
         self.animation()
@@ -137,7 +151,7 @@ class Goomba(Enemy):
 
 
     def setup_frames(self):
-        """Put the image frames in a list to be animated"""
+        """设置栗子怪动画帧列表"""
 
         self.frames.append(
             self.get_image(0, 4, 16, 16))
@@ -149,7 +163,7 @@ class Goomba(Enemy):
 
 
     def jumped_on(self):
-        """When Mario squishes him"""
+        """被踩扁：Mario从上方踩踏后播放死亡动画"""
         self.frame_index = 2
 
         if (self.current_time - self.death_timer) > 500:
@@ -165,7 +179,7 @@ class Koopa(Enemy):
 
 
     def setup_frames(self):
-        """Sets frame list"""
+        """设置乌龟动画帧列表"""
         self.frames.append(
             self.get_image(150, 0, 16, 24))
         self.frames.append(
@@ -176,7 +190,7 @@ class Koopa(Enemy):
 
 
     def jumped_on(self):
-        """When Mario jumps on the Koopa and puts him in his shell"""
+        """被踩踏：进入龟壳状态"""
         self.x_vel = 0
         self.frame_index = 2
         shell_y = self.rect.bottom
@@ -187,7 +201,7 @@ class Koopa(Enemy):
 
 
     def shell_sliding(self):
-        """When the koopa is sliding along the ground in his shell"""
+        """龟壳滑动：高速水平移动，可消灭其他敌人"""
         if self.direction == c.RIGHT:
             self.x_vel = 10
         elif self.direction == c.LEFT:

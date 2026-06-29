@@ -3,15 +3,32 @@ from .. import constants as c
 from .. import setup
 
 
+"""
+道具系统模块
+
+包含：
+- Powerup 基类：道具出现、滑动、下落生命周期
+- Mushroom：蘑菇道具（小变大）
+- LifeMushroom：1UP蘑菇
+- FireFlower：火焰花（大变火焰）
+- Star：无敌星（10秒无敌+颜色循环）
+
+- FireBall：火球实体（飞行、弹跳、爆炸）
+"""
+
+import pygame as pg
+from .. import constants as c
+from .. import setup
+
+
 class Powerup(pg.sprite.Sprite):
-    """Base class for all powerup_group"""
+    """道具基类：统一管理道具出现、滑动和下落状态"""
     def __init__(self, x, y):
         super(Powerup, self).__init__()
 
 
     def setup_powerup(self, x, y, name, setup_frames):
-        """This separate setup function allows me to pass a different
-        setup_frames method depending on what the powerup is"""
+        """分离初始化：不同道具可传入不同的帧设置函数"""
         self.sprite_sheet = setup.GFX['item_objects']
         self.frames = []
         self.frame_index = 0
@@ -32,7 +49,7 @@ class Powerup(pg.sprite.Sprite):
 
 
     def get_image(self, x, y, width, height):
-        """Get the image frames from the sprite sheet"""
+        """从精灵表中提取图片帧"""
 
         image = pg.Surface([width, height]).convert()
         rect = image.get_rect()
@@ -48,7 +65,7 @@ class Powerup(pg.sprite.Sprite):
 
 
     def update(self, game_info, *args):
-        """Updates powerup behavior"""
+        """每帧更新道具行为"""
         self.current_time = game_info[c.CURRENT_TIME]
         self.handle_state()
 
@@ -58,7 +75,7 @@ class Powerup(pg.sprite.Sprite):
 
 
     def revealing(self, *args):
-        """Action when powerup leaves the coin box or brick"""
+        """从方块中出现：道具上升动画"""
         self.rect.y += self.y_vel
 
         if self.rect.bottom <= self.box_height:
@@ -68,7 +85,7 @@ class Powerup(pg.sprite.Sprite):
 
 
     def sliding(self):
-        """Action for when powerup slides along the ground"""
+        """滑动状态：道具在地面滚动"""
         if self.direction == c.RIGHT:
             self.x_vel = 3
         else:
@@ -76,25 +93,25 @@ class Powerup(pg.sprite.Sprite):
 
 
     def falling(self):
-        """When powerups fall of a ledge"""
+        """下落状态：道具从边缘掉落"""
         if self.y_vel < self.max_y_vel:
             self.y_vel += self.gravity
 
 
 class Mushroom(Powerup):
-    """Powerup that makes Mario become bigger"""
+    """蘑菇道具：Mario从小变大"""
     def __init__(self, x, y, name='mushroom'):
         super(Mushroom, self).__init__(x, y)
         self.setup_powerup(x, y, name, self.setup_frames)
 
 
     def setup_frames(self):
-        """Sets up frame list"""
+        """设置动画帧列表"""
         self.frames.append(self.get_image(0, 0, 16, 16))
 
 
     def handle_state(self):
-        """Handles behavior based on state"""
+        """根据状态分发火球行为"""
         if self.state == c.REVEAL:
             self.revealing()
         elif self.state == c.SLIDE:
@@ -104,7 +121,7 @@ class Mushroom(Powerup):
 
 
 class LifeMushroom(Mushroom):
-    """1up mushroom"""
+    """1UP蘑菇：增加一条生命"""
     def __init__(self, x, y, name='1up_mushroom'):
         super(LifeMushroom, self).__init__(x, y)
         self.setup_powerup(x, y, name, self.setup_frames)
@@ -114,14 +131,14 @@ class LifeMushroom(Mushroom):
 
 
 class FireFlower(Powerup):
-    """Powerup that allows Mario to throw fire balls"""
+    """火焰花道具：Mario获得发射火球能力"""
     def __init__(self, x, y, name=c.FIREFLOWER):
         super(FireFlower, self).__init__(x, y)
         self.setup_powerup(x, y, name, self.setup_frames)
 
 
     def setup_frames(self):
-        """Sets up frame list"""
+        """设置动画帧列表"""
         self.frames.append(
             self.get_image(0, 32, 16, 16))
         self.frames.append(
@@ -133,7 +150,7 @@ class FireFlower(Powerup):
 
 
     def handle_state(self):
-        """Handle behavior based on state"""
+        """根据状态分发行为"""
         if self.state == c.REVEAL:
             self.revealing()
         elif self.state == c.RESTING:
@@ -141,7 +158,7 @@ class FireFlower(Powerup):
 
 
     def revealing(self):
-        """Animation of flower coming out of box"""
+        """从方块中出现的动画"""
         self.rect.y += self.y_vel
 
         if self.rect.bottom <= self.box_height:
@@ -152,12 +169,12 @@ class FireFlower(Powerup):
 
 
     def resting(self):
-        """Fire Flower staying still on opened box"""
+        """火焰花静止在已打开的方块上"""
         self.animation()
 
 
     def animation(self):
-        """Method to make the Fire Flower blink"""
+        """火焰花闪烁动画"""
         if (self.current_time - self.animate_timer) > 30:
             if self.frame_index < 3:
                 self.frame_index += 1
@@ -169,7 +186,7 @@ class FireFlower(Powerup):
 
 
 class Star(Powerup):
-    """A powerup that gives mario invincibility"""
+    """无敌星道具：Mario获得10秒无敌"""
     def __init__(self, x, y, name='star'):
         super(Star, self).__init__(x, y)
         self.setup_powerup(x, y, name, self.setup_frames)
@@ -179,8 +196,7 @@ class Star(Powerup):
 
 
     def setup_frames(self):
-        """Creating the self.frames list where the images for the animation
-        are stored"""
+        """创建动画帧列表并设置动画图像"""
         self.frames.append(self.get_image(1, 48, 15, 16))
         self.frames.append(self.get_image(17, 48, 15, 16))
         self.frames.append(self.get_image(33, 48, 15, 16))
@@ -188,7 +204,7 @@ class Star(Powerup):
 
 
     def handle_state(self):
-        """Handles behavior based on state"""
+        """根据状态分发火球行为"""
         if self.state == c.REVEAL:
             self.revealing()
         elif self.state == c.BOUNCE:
@@ -196,7 +212,7 @@ class Star(Powerup):
 
 
     def revealing(self):
-        """When the star comes out of the box"""
+        """从方块中出现"""
         self.rect.y += self.y_vel
 
         if self.rect.bottom <= self.box_height:
@@ -208,7 +224,7 @@ class Star(Powerup):
 
 
     def animation(self):
-        """sets image for animation"""
+        """设置动画帧图片"""
         if (self.current_time - self.animate_timer) > 30:
             if self.frame_index < 3:
                 self.frame_index += 1
@@ -219,12 +235,12 @@ class Star(Powerup):
 
 
     def start_bounce(self, vel):
-        """Transitions into bouncing state"""
+        """进入弹跳状态"""
         self.y_vel = vel
 
 
     def bouncing(self):
-        """Action when the star is bouncing around"""
+        """弹跳状态：星星在场景中弹跳"""
         self.animation()
 
         if self.direction == c.LEFT:
@@ -235,7 +251,7 @@ class Star(Powerup):
 
 
 class FireBall(pg.sprite.Sprite):
-    """Shot from Fire Mario"""
+    """火球：火焰马里奥发射的投射物"""
     def __init__(self, x, y, facing_right, name=c.FIREBALL):
         super(FireBall, self).__init__()
         self.sprite_sheet = setup.GFX['item_objects']
@@ -259,7 +275,7 @@ class FireBall(pg.sprite.Sprite):
 
 
     def setup_frames(self):
-        """Sets up animation frames"""
+        """设置火球动画帧"""
         self.frames = []
 
         self.frames.append(
@@ -279,7 +295,7 @@ class FireBall(pg.sprite.Sprite):
 
 
     def get_image(self, x, y, width, height):
-        """Get the image frames from the sprite sheet"""
+        """从精灵表中提取图片帧"""
 
         image = pg.Surface([width, height]).convert()
         rect = image.get_rect()
@@ -295,14 +311,14 @@ class FireBall(pg.sprite.Sprite):
 
 
     def update(self, game_info, viewport):
-        """Updates fireball behavior"""
+        """更新火球行为"""
         self.current_time = game_info[c.CURRENT_TIME]
         self.handle_state()
         self.check_if_off_screen(viewport)
 
 
     def handle_state(self):
-        """Handles behavior based on state"""
+        """根据状态分发火球行为"""
         if self.state == c.FLYING:
             self.animation()
         elif self.state == c.BOUNCING:
@@ -312,7 +328,7 @@ class FireBall(pg.sprite.Sprite):
 
 
     def animation(self):
-        """adjusts frame for animation"""
+        """调整动画帧索引"""
         if self.state == c.FLYING or self.state == c.BOUNCING:
             if (self.current_time - self.animation_timer) > 200:
                 if self.frame_index < 3:
@@ -334,7 +350,7 @@ class FireBall(pg.sprite.Sprite):
 
 
     def explode_transition(self):
-        """Transitions fireball to EXPLODING state"""
+        """进入爆炸状态"""
         self.frame_index = 4
         centerx = self.rect.centerx
         self.image = self.frames[self.frame_index]
@@ -343,7 +359,7 @@ class FireBall(pg.sprite.Sprite):
 
 
     def check_if_off_screen(self, viewport):
-        """Removes from sprite group if off screen"""
+        """超出屏幕时移除火球"""
         if (self.rect.x > viewport.right) or (self.rect.y > viewport.bottom) \
             or (self.rect.right < viewport.x):
             self.kill()

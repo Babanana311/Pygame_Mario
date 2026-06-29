@@ -1,3 +1,11 @@
+"""
+HUD 信息显示模块
+
+包含：
+- Character 类：单个文字/数字精灵
+- OverheadInfo 类：管理分数、金币、时间、生命的显示和更新
+"""
+
 import pygame as pg
 from .. import setup
 from .. import constants as c
@@ -5,7 +13,7 @@ from . import flashing_coin
 
 
 class Character(pg.sprite.Sprite):
-    """Parent class for all characters used for the overhead level info"""
+    """单个文字/数字精灵，用于HUD标签显示"""
     def __init__(self, image):
         super(Character, self).__init__()
         self.image = image
@@ -13,8 +21,7 @@ class Character(pg.sprite.Sprite):
 
 
 class OverheadInfo(object):
-    """Class for level information like score, coin total,
-        and time remaining"""
+    """HUD信息显示：管理分数、金币、时间、生命的状态和渲染"""
     def __init__(self, game_info, state):
         self.sprite_sheet = setup.GFX['text_images']
         self.coin_total = game_info[c.COIN_TOTAL]
@@ -40,7 +47,7 @@ class OverheadInfo(object):
 
 
     def create_image_dict(self):
-        """Creates the initial images for the score"""
+        """创建分数数字的初始图片"""
         self.image_dict = {}
         image_list = []
 
@@ -95,7 +102,7 @@ class OverheadInfo(object):
 
 
     def get_image(self, x, y, width, height):
-        """Extracts image from sprite sheet"""
+        """从精灵表中提取图片"""
         image = pg.Surface([width, height])
         rect = image.get_rect()
 
@@ -108,13 +115,13 @@ class OverheadInfo(object):
 
 
     def create_score_group(self):
-        """Creates the initial empty score (000000)"""
+        """创建初始空分数显示(000000)"""
         self.score_images = []
         self.create_label(self.score_images, '000000', 75, 55)
 
 
     def create_info_labels(self):
-        """Creates the labels that describe each info"""
+        """创建信息标签(MARIO, WORLD, TIME)"""
         self.mario_label = []
         self.world_label = []
         self.time_label = []
@@ -133,7 +140,7 @@ class OverheadInfo(object):
 
 
     def create_load_screen_labels(self):
-        """Creates labels for the center info of a load screen"""
+        """创建加载界面中央信息标签"""
         world_label = []
         number_label = []
 
@@ -144,13 +151,13 @@ class OverheadInfo(object):
 
 
     def create_countdown_clock(self):
-        """Creates the count down clock for the level"""
+        """创建关卡倒计时显示"""
         self.count_down_images = []
         self.create_label(self.count_down_images, str(self.time), 645, 55)
 
 
     def create_label(self, label_list, string, x, y):
-        """Creates a label (WORLD, TIME, MARIO)"""
+        """创建标签：将字符串转换为精灵列表"""
         for letter in string:
             label_list.append(Character(self.image_dict[letter]))
 
@@ -158,7 +165,7 @@ class OverheadInfo(object):
 
 
     def set_label_rects(self, label_list, x, y):
-        """Set the location of each individual character"""
+        """设置每个字符精灵的显示位置"""
         for i, letter in enumerate(label_list):
             letter.rect.x = x + ((letter.rect.width + 3) * i)
             letter.rect.y = y
@@ -168,18 +175,18 @@ class OverheadInfo(object):
 
 
     def create_coin_counter(self):
-        """Creates the info that tracks the number of coins Mario collects"""
+        """创建金币计数显示"""
         self.coin_count_images = []
         self.create_label(self.coin_count_images, '*00', 300, 55)
 
 
     def create_flashing_coin(self):
-        """Creates the flashing coin next to the coin total"""
+        """创建金币总数旁的闪烁金币"""
         self.flashing_coin = flashing_coin.Coin(280, 53)
 
 
     def create_mario_image(self):
-        """Get the mario image"""
+        """获取Mario头像图片（用于生命显示）"""
         self.life_times_image = self.get_image(75, 247, 6, 6)
         self.life_times_rect = self.life_times_image.get_rect(center=(378, 295))
         self.life_total_label = []
@@ -192,7 +199,7 @@ class OverheadInfo(object):
 
 
     def create_game_over_label(self):
-        """Create the label for the GAME OVER screen"""
+        """创建GAME OVER界面标签"""
         game_label = []
         over_label = []
 
@@ -203,7 +210,7 @@ class OverheadInfo(object):
 
 
     def create_time_out_label(self):
-        """Create the label for the time out screen"""
+        """创建TIME OUT界面标签"""
         time_out_label = []
 
         self.create_label(time_out_label, 'TIME OUT', 290, 310)
@@ -211,7 +218,7 @@ class OverheadInfo(object):
 
 
     def create_main_menu_labels(self):
-        """Create labels for the MAIN MENU screen"""
+        """创建主菜单界面标签"""
         player_one_game = []
         player_two_game = []
         top = []
@@ -227,13 +234,13 @@ class OverheadInfo(object):
 
 
     def update(self, level_info, mario=None):
-        """Updates all overhead info"""
+        """更新所有HUD信息"""
         self.mario = mario
         self.handle_level_state(level_info)
 
 
     def handle_level_state(self, level_info):
-        """Updates info based on what state the game is in"""
+        """根据游戏状态更新HUD显示"""
         if self.state == c.MAIN_MENU:
             self.score = level_info[c.SCORE]
             self.update_score_images(self.score_images, self.score)
@@ -282,7 +289,7 @@ class OverheadInfo(object):
 
 
     def update_score_images(self, images, score):
-        """Updates what numbers are to be blitted for the score"""
+        """更新分数显示的数字图片"""
         index = len(images) - 1
 
         for digit in reversed(str(score)):
@@ -293,7 +300,7 @@ class OverheadInfo(object):
 
 
     def update_count_down_clock(self, level_info):
-        """Updates current time"""
+        """更新倒计时时间"""
         if self.state == c.FAST_COUNT_DOWN:
             self.time -= 1
 
@@ -312,7 +319,7 @@ class OverheadInfo(object):
 
 
     def update_coin_total(self, level_info):
-        """Updates the coin total and adjusts label accordingly"""
+        """更新金币计数并调整标签"""
         self.coin_total = level_info[c.COIN_TOTAL]
 
         coin_string = str(self.coin_total)
@@ -332,7 +339,7 @@ class OverheadInfo(object):
 
 
     def draw(self, surface):
-        """Draws overhead info based on state"""
+        """根据状态绘制HUD信息"""
         if self.state == c.MAIN_MENU:
             self.draw_main_menu_info(surface)
         elif self.state == c.LOAD_SCREEN:
@@ -353,7 +360,7 @@ class OverheadInfo(object):
 
 
     def draw_main_menu_info(self, surface):
-        """Draws info for main menu"""
+        """绘制主菜单HUD"""
         for info in self.score_images:
             surface.blit(info.image, info.rect)
 
@@ -372,7 +379,7 @@ class OverheadInfo(object):
 
 
     def draw_loading_screen_info(self, surface):
-        """Draws info for loading screen"""
+        """绘制加载界面HUD"""
         for info in self.score_images:
             surface.blit(info.image, info.rect)
 
@@ -397,7 +404,7 @@ class OverheadInfo(object):
 
 
     def draw_level_screen_info(self, surface):
-        """Draws info during regular game play"""
+        """绘制关卡游戏HUD"""
         for info in self.score_images:
             surface.blit(info.image, info.rect)
 
@@ -415,7 +422,7 @@ class OverheadInfo(object):
 
 
     def draw_game_over_screen_info(self, surface):
-        """Draws info when game over"""
+        """绘制游戏结束HUD"""
         for info in self.score_images:
             surface.blit(info.image, info.rect)
 
@@ -434,7 +441,7 @@ class OverheadInfo(object):
 
 
     def draw_time_out_screen_info(self, surface):
-        """Draws info when on the time out screen"""
+        """绘制时间耗尽HUD"""
         for info in self.score_images:
             surface.blit(info.image, info.rect)
 

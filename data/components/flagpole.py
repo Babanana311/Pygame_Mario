@@ -1,9 +1,15 @@
+"""
+旗杆模块（关卡终点）
+
+包含 Flag、Pole、Finial 三个组件，组成关卡终点的旗杆。
+"""
+
 import pygame as pg
 from .. import setup
 from .. import constants as c
 
 class Flag(pg.sprite.Sprite):
-    """Flag on top of the flag pole at the end of the level"""
+    """旗帜：随Mario滑下旗杆"""
     def __init__(self, x, y):
         super(Flag, self).__init__()
         self.sprite_sheet = setup.GFX['item_objects']
@@ -16,7 +22,7 @@ class Flag(pg.sprite.Sprite):
 
 
     def setup_images(self):
-        """Sets up a list of image frames"""
+        """创建动画帧列表"""
         self.frames = []
 
         self.frames.append(
@@ -24,7 +30,7 @@ class Flag(pg.sprite.Sprite):
 
 
     def get_image(self, x, y, width, height):
-        """Extracts image from sprite sheet"""
+        """从精灵表中提取图片"""
         image = pg.Surface([width, height])
         rect = image.get_rect()
 
@@ -37,12 +43,12 @@ class Flag(pg.sprite.Sprite):
 
 
     def update(self, *args):
-        """Updates behavior"""
+        """每帧更新行为"""
         self.handle_state()
 
 
     def handle_state(self):
-        """Determines behavior based on state"""
+        """根据状态分发旗帜行为"""
         if self.state == c.TOP_OF_POLE:
             self.image = self.frames[0]
         elif self.state == c.SLIDE_DOWN:
@@ -52,7 +58,7 @@ class Flag(pg.sprite.Sprite):
 
 
     def sliding_down(self):
-        """State when Mario reaches flag pole"""
+        """旗杆顶部：Mario到达旗杆时触发滑下"""
         self.y_vel = 5
         self.rect.y += self.y_vel
 
@@ -61,7 +67,7 @@ class Flag(pg.sprite.Sprite):
 
 
 class Pole(pg.sprite.Sprite):
-    """Pole that the flag is on top of"""
+    """旗杆：旗帜滑动的主杆"""
     def __init__(self, x, y):
         super(Pole, self).__init__()
         self.sprite_sheet = setup.GFX['tile_set']
@@ -73,7 +79,7 @@ class Pole(pg.sprite.Sprite):
 
 
     def setup_frames(self):
-        """Create the frame list"""
+        """创建动画帧列表"""
         self.frames = []
 
         self.frames.append(
@@ -81,7 +87,7 @@ class Pole(pg.sprite.Sprite):
 
 
     def get_image(self, x, y, width, height):
-        """Extracts image from sprite sheet"""
+        """从精灵表中提取图片"""
         image = pg.Surface([width, height])
         rect = image.get_rect()
 
@@ -94,12 +100,12 @@ class Pole(pg.sprite.Sprite):
 
 
     def update(self, *args):
-        """Placeholder for update, since there is nothing to update"""
+        """更新：静态元素无需更新"""
         pass
 
 
 class Finial(pg.sprite.Sprite):
-    """The top of the flag pole"""
+    """旗杆顶部装饰球"""
     def __init__(self, x, y):
         super(Finial, self).__init__()
         self.sprite_sheet = setup.GFX['tile_set']
@@ -111,7 +117,7 @@ class Finial(pg.sprite.Sprite):
 
 
     def setup_frames(self):
-        """Creates the self.frames list"""
+        """创建帧列表"""
         self.frames = []
 
         self.frames.append(
@@ -119,7 +125,7 @@ class Finial(pg.sprite.Sprite):
 
 
     def get_image(self, x, y, width, height):
-        """Extracts image from sprite sheet"""
+        """从精灵表中提取图片"""
         image = pg.Surface([width, height])
         rect = image.get_rect()
 

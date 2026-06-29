@@ -1,3 +1,14 @@
+"""
+Mario 玩家角色模块
+
+包含 Mario 类，完整实现玩家角色的状态机、物理、动画系统。
+
+状态机包含以下状态：
+- 基本状态：STAND（站立）、WALK（行走）、JUMP（跳跃）、FALL（下落）
+- 过渡状态：SMALL_TO_BIG（小变大）、BIG_TO_FIRE（大变火焰）、BIG_TO_SMALL（大变小）
+- 特殊状态：FLAGPOLE（旗杆）、WALKING_TO_CASTLE（走向城堡）、DEATH_JUMP（死亡跳跃）
+"""
+
 import pygame as pg
 from .. import setup, tools
 from .. import constants as c
@@ -5,6 +16,11 @@ from . import powerups
 
 
 class Mario(pg.sprite.Sprite):
+    """
+    Mario 玩家角色精灵类
+
+    管理玩家的状态机、物理运动、动画帧、道具效果和无敌状态。
+    """
     def __init__(self):
         pg.sprite.Sprite.__init__(self)
         self.sprite_sheet = setup.GFX['mario_bros']
@@ -24,7 +40,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def setup_timers(self):
-        """Sets up timers for animations"""
+        """初始化所有动画和状态计时器"""
         self.walking_timer = 0
         self.invincible_animation_timer = 0
         self.invincible_start_timer = 0
@@ -38,8 +54,8 @@ class Mario(pg.sprite.Sprite):
 
 
     def setup_state_booleans(self):
-        """Sets up booleans that affect Mario's behavior"""
-        self.facing_right = True
+        """初始化所有状态标志位"""
+        self.facing_right = True       # 朝向：True=右 False=左
         self.allow_jump = True
         self.dead = False
         self.invincible = False
@@ -54,7 +70,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def setup_forces(self):
-        """Sets up forces that affect Mario's velocity"""
+        """初始化物理属性：速度、加速度、重力"""
         self.x_vel = 0
         self.y_vel = 0
         self.max_x_vel = c.MAX_WALK_SPEED
@@ -65,7 +81,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def setup_counters(self):
-        """These keep track of various total for important values"""
+        """初始化各种计数器"""
         self.frame_index = 0
         self.invincible_index = 0
         self.fire_transition_index = 0
@@ -74,8 +90,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def load_images_from_sheet(self):
-        """Extracts Mario images from his sprite sheet and assigns
-        them to appropriate lists"""
+        """从精灵表中提取所有Mario图片帧，按大小和颜色分类存入帧列表"""
         self.right_frames = []
         self.left_frames = []
 
@@ -382,7 +397,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def get_image(self, x, y, width, height):
-        """Extracts image from sprite sheet"""
+        """从精灵表中提取图片"""
         image = pg.Surface([width, height])
         rect = image.get_rect()
 
@@ -395,7 +410,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def update(self, keys, game_info, fire_group):
-        """Updates Mario's states and animations once per frame"""
+        """每帧更新Mario状态和动画"""
         self.current_time = game_info[c.CURRENT_TIME]
         self.handle_state(keys, fire_group)
         self.check_for_special_state()
@@ -403,7 +418,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def handle_state(self, keys, fire_group):
-        """Determines Mario's behavior based on his state"""
+        """状态机核心：根据当前状态分发到对应的处理方法"""
         if self.state == c.STAND:
             self.standing(keys, fire_group)
         elif self.state == c.WALK:
@@ -431,7 +446,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def standing(self, keys, fire_group):
-        """This function is called if Mario is standing still"""
+        """站立状态：检测输入切换到行走/跳跃"""
         self.check_to_allow_jump(keys)
         self.check_to_allow_fireball(keys)
         
@@ -470,7 +485,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def get_out_of_crouch(self):
-        """Get out of crouch"""
+        """退出蹲下状态"""
         bottom = self.rect.bottom
         left = self.rect.x
         if self.facing_right:
@@ -484,19 +499,19 @@ class Mario(pg.sprite.Sprite):
 
 
     def check_to_allow_jump(self, keys):
-        """Check to allow Mario to jump"""
+        """检查是否允许跳跃（松开跳跃键后允许）"""
         if not keys[tools.keybinding['jump']]:
             self.allow_jump = True
 
 
     def check_to_allow_fireball(self, keys):
-        """Check to allow the shooting of a fireball"""
+        """检查是否允许发射火球"""
         if not keys[tools.keybinding['action']]:
             self.allow_fireball = True
 
 
     def shoot_fireball(self, powerup_group):
-        """Shoots fireball, allowing no more than two to exist at once"""
+        """发射火球：最多允许同时存在2个"""
         setup.SFX['fireball'].play()
         self.fireball_count = self.count_number_of_fireballs(powerup_group)
 
@@ -515,7 +530,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def count_number_of_fireballs(self, powerup_group):
-        """Count number of fireballs that exist in the level"""
+        """统计场景中火球数量"""
         fireball_list = []
 
         for powerup in powerup_group:
@@ -526,9 +541,8 @@ class Mario(pg.sprite.Sprite):
 
 
     def walking(self, keys, fire_group):
-        """This function is called when Mario is in a walking state
-        It changes the frame, checks for holding down the run button,
-        checks for a jump, then adjusts the state if necessary"""
+        """行走状态：处理移动、加速、跳跃和方向切换。
+        按住S键时进入奔跑模式，最大速度大幅提升"""
 
         self.check_to_allow_jump(keys)
         self.check_to_allow_fireball(keys)
@@ -616,8 +630,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def calculate_animation_speed(self):
-        """Used to make walking animation speed be in relation to
-        Mario's x-vel"""
+        """根据水平速度计算动画播放速度，速度越快动画越快"""
         if self.x_vel == 0:
             animation_speed = 130
         elif self.x_vel > 0:
@@ -629,7 +642,8 @@ class Mario(pg.sprite.Sprite):
 
 
     def jumping(self, keys, fire_group):
-        """Called when Mario is in a JUMP state."""
+        """跳跃状态：使用较轻重力（JUMP_GRAVITY=0.31）。
+        松开跳跃键后重力恢复为GRAVITY=1.01，进入下落状态"""
         self.allow_jump = False
         self.frame_index = 4
         self.gravity = c.JUMP_GRAVITY
@@ -658,7 +672,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def falling(self, keys, fire_group):
-        """Called when Mario is in a FALL state"""
+        """下落状态：使用正常重力加速下落"""
         self.check_to_allow_fireball(keys)
         if self.y_vel < c.MAX_Y_VEL:
             self.y_vel += self.gravity
@@ -677,7 +691,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def jumping_to_death(self):
-        """Called when Mario is in a DEATH_JUMP state"""
+        """死亡跳跃状态：跳起后落下出屏"""
         if self.death_timer == 0:
             self.death_timer = self.current_time
         elif (self.current_time - self.death_timer) > 500:
@@ -686,7 +700,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def start_death_jump(self, game_info):
-        """Used to put Mario in a DEATH_JUMP state"""
+        """进入死亡跳跃状态"""
         self.dead = True
         game_info[c.MARIO_DEAD] = True
         self.y_vel = -11
@@ -698,8 +712,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def changing_to_big(self):
-        """Changes Mario's image attribute based on time while
-        transitioning to big"""
+        """小变大过渡动画：闪烁数次后切换为大马里奥"""
         self.in_transition_state = True
 
         if self.transition_timer == 0:
@@ -733,16 +746,14 @@ class Mario(pg.sprite.Sprite):
 
 
     def timer_between_these_two_times(self,start_time, end_time):
-        """Checks if the timer is at the right time for the action. Reduces
-        the ugly code."""
+        """检查当前时间是否在指定区间内，用于过渡动画的时序控制"""
         if (self.current_time - self.transition_timer) >= start_time\
             and (self.current_time - self.transition_timer) < end_time:
             return True
 
 
     def set_mario_to_middle_image(self):
-        """During a change from small to big, sets mario's image to the
-        transition/middle size"""
+        """设置Mario为中间过渡尺寸（小变大动画中）"""
         if self.facing_right:
             self.image = self.normal_small_frames[0][7]
         else:
@@ -755,7 +766,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def set_mario_to_small_image(self):
-        """During a change from small to big, sets mario's image to small"""
+        """设置Mario为小尺寸图片（过渡动画中）"""
         if self.facing_right:
             self.image = self.normal_small_frames[0][0]
         else:
@@ -768,7 +779,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def set_mario_to_big_image(self):
-        """During a change from small to big, sets mario's image to big"""
+        """设置Mario为大尺寸图片（过渡动画中）"""
         if self.facing_right:
             self.image = self.normal_big_frames[0][0]
         else:
@@ -793,8 +804,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def changing_to_fire(self):
-        """Called when Mario is in a BIG_TO_FIRE state (i.e. when
-        he obtains a fire flower"""
+        """大变火焰过渡动画：颜色循环闪烁后切换为火焰马里奥"""
         self.in_transition_state = True
 
         if self.facing_right:
@@ -847,8 +857,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def changing_to_small(self):
-        """Mario's state and animation when he shrinks from big to small
-        after colliding with an enemy"""
+        """大变小过渡动画：被敌人伤害后缩小，带有闪烁无敌效果"""
         self.in_transition_state = True
         self.hurt_invincible = True
         self.state = c.BIG_TO_SMALL
@@ -918,8 +927,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def adjust_rect(self):
-        """Makes sure new Rect has the same bottom and left
-        location as previous Rect"""
+        """调整碰撞矩形，保持底部和左侧位置不变"""
         x = self.rect.x
         bottom = self.rect.bottom
         self.rect = self.image.get_rect()
@@ -940,7 +948,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def flag_pole_sliding(self):
-        """State where Mario is sliding down the flag pole"""
+        """旗杆滑下状态：沿旗杆下滑并切换帧"""
         self.state = c.FLAGPOLE
         self.in_transition_state = True
         self.x_vel = 0
@@ -968,7 +976,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def sitting_at_bottom_of_pole(self):
-        """State when mario is at the bottom of the flag pole"""
+        """旗杆底部状态：等待进入城堡"""
         if self.flag_pole_timer == 0:
             self.flag_pole_timer = self.current_time
             self.image = self.left_frames[10]
@@ -983,7 +991,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def set_state_to_bottom_of_pole(self):
-        """Sets Mario to the BOTTOM_OF_POLE state"""
+        """设置Mario为旗杆底部状态"""
         self.image = self.left_frames[9]
         right = self.rect.right
         #self.rect.bottom = 493
@@ -995,7 +1003,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def walking_to_castle(self):
-        """State when Mario walks to the castle to end the level"""
+        """走向城堡状态：自动向右行走"""
         self.max_x_vel = 5
         self.x_accel = c.WALK_ACCEL
 
@@ -1015,13 +1023,13 @@ class Mario(pg.sprite.Sprite):
 
 
     def falling_at_end_of_level(self, *args):
-        """State when Mario is falling from the flag pole base"""
+        """关卡结束下落状态"""
         self.y_vel += c.GRAVITY
 
 
 
     def check_for_special_state(self):
-        """Determines if Mario is invincible, Fire Mario or recently hurt"""
+        """检查特殊状态：无敌、火焰、受伤无敌、蹲下"""
         self.check_if_invincible()
         self.check_if_fire()
         self.check_if_hurt_invincible()
@@ -1073,7 +1081,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def check_if_hurt_invincible(self):
-        """Check if Mario is still temporarily invincible after getting hurt"""
+        """检查受伤后临时无敌是否到期"""
         if self.hurt_invincible and self.state != c.BIG_TO_SMALL:
             if self.hurt_invisible_timer2 == 0:
                 self.hurt_invisible_timer2 = self.current_time
@@ -1089,7 +1097,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def hurt_invincible_check(self):
-        """Makes Mario invincible on a fixed interval"""
+        """受伤无敌闪烁效果（交替显示/隐藏）"""
         if self.hurt_invisible_timer == 0:
             self.hurt_invisible_timer = self.current_time
         elif (self.current_time - self.hurt_invisible_timer) < 35:
@@ -1100,7 +1108,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def check_if_crouching(self):
-        """Checks if mario is crouching"""
+        """检查是否蹲下：切换为大马里奥蹲下帧"""
         if self.crouching and self.big:
             bottom = self.rect.bottom
             left = self.rect.x
@@ -1114,7 +1122,7 @@ class Mario(pg.sprite.Sprite):
 
 
     def animation(self):
-        """Adjusts Mario's image for animation"""
+        """更新Mario当前帧图片"""
         if self.state == c.DEATH_JUMP \
             or self.state == c.SMALL_TO_BIG \
             or self.state == c.BIG_TO_FIRE \

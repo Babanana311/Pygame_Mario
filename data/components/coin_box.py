@@ -6,8 +6,22 @@ from . import coin
 
 
 
+"""
+问号方块模块
+
+包含 Coin_box 类：可被顶出道具或金币，支持 RESTING/BUMPED/OPENED 三状态
+"""
+
+import pygame as pg
+from .. import setup
+from .. import constants as c
+from . import powerups
+from . import coin
+
+
+
 class Coin_box(pg.sprite.Sprite):
-    """Coin box sprite"""
+    """问号方块：从下方撞击后弹出道具或金币"""
     def __init__(self, x, y, contents='coin', group=None):
         pg.sprite.Sprite.__init__(self)
         self.sprite_sheet = setup.GFX['tile_set']
@@ -30,7 +44,7 @@ class Coin_box(pg.sprite.Sprite):
 
 
     def get_image(self, x, y, width, height):
-        """Extract image from sprite sheet"""
+        """从精灵表中提取图片并缩放"""
         image = pg.Surface([width, height]).convert()
         rect = image.get_rect()
 
@@ -44,7 +58,7 @@ class Coin_box(pg.sprite.Sprite):
 
 
     def setup_frames(self):
-        """Create frame list"""
+        """创建动画帧列表"""
         self.frames.append(
             self.get_image(384, 0, 16, 16))
         self.frames.append(
@@ -56,14 +70,13 @@ class Coin_box(pg.sprite.Sprite):
 
 
     def update(self, game_info):
-        """Update coin box behavior"""
+        """每帧更新问号方块行为"""
         self.current_time = game_info[c.CURRENT_TIME]
         self.handle_states()
 
 
     def handle_states(self):
-        """Determine action based on RESTING, BUMPED or OPENED
-        state"""
+        """根据状态分发方块行为"""
         if self.state == c.RESTING:
             self.resting()
         elif self.state == c.BUMPED:
@@ -73,7 +86,7 @@ class Coin_box(pg.sprite.Sprite):
 
 
     def resting(self):
-        """Action when in the RESTING state"""
+        """静止状态：闪烁动画效果"""
         if self.first_half:
             if self.frame_index == 0:
                 if (self.current_time - self.animation_timer) > 375:
@@ -99,7 +112,7 @@ class Coin_box(pg.sprite.Sprite):
 
 
     def bumped(self):
-        """Action after Mario has bumped the box from below"""
+        """被撞击状态：弹起后落回原位"""
         self.rect.y += self.y_vel
         self.y_vel += self.gravity
 
@@ -119,7 +132,7 @@ class Coin_box(pg.sprite.Sprite):
 
 
     def start_bump(self, score_group):
-        """Transitions box into BUMPED state"""
+        """触发撞击：弹出内容物并进入 BUMPED 状态"""
         self.y_vel = -6
         self.state = c.BUMPED
 
@@ -133,7 +146,7 @@ class Coin_box(pg.sprite.Sprite):
 
 
     def opened(self):
-        """Placeholder for OPENED state"""
+        """已打开状态：保持空方块外观"""
         pass
 
 

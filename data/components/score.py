@@ -1,10 +1,16 @@
+"""
+浮动分数模块
+
+包含 Score 类和 Digit 精灵，显示击杀/收集后的浮动分数。
+"""
+
 import pygame as pg
 from .. import setup
 from .. import constants as c
 
 
 class Digit(pg.sprite.Sprite):
-    """Individual digit for score"""
+    """数字精灵：显示分数的单个数字"""
     def __init__(self, image):
         super(Digit, self).__init__()
         self.image = image
@@ -12,7 +18,7 @@ class Digit(pg.sprite.Sprite):
 
 
 class Score(object):
-    """Scores that appear, float up, and disappear"""
+    """浮动分数：显示后上升消失"""
     def __init__(self, x, y, score, flag_pole=False):
         self.x = x
         self.y = y
@@ -28,7 +34,7 @@ class Score(object):
 
 
     def create_image_dict(self):
-        """Creates the dictionary for all the number images needed"""
+        """创建数字图片字典"""
         self.image_dict = {}
 
         image0 = self.get_image(1, 168, 3, 8)
@@ -53,7 +59,7 @@ class Score(object):
 
 
     def get_image(self, x, y, width, height):
-        """Extracts image from sprite sheet"""
+        """从精灵表中提取图片"""
         image = pg.Surface([width, height]).convert()
         rect = image.get_rect()
 
@@ -66,7 +72,7 @@ class Score(object):
 
 
     def create_digit_list(self):
-        """Creates the group of images based on score received"""
+        """根据分数创建数字精灵列表"""
         self.digit_list = []
         self.digit_group = pg.sprite.Group()
 
@@ -77,7 +83,7 @@ class Score(object):
 
 
     def set_rects_for_images(self):
-        """Set the rect attributes for each image in self.image_list"""
+        """设置每个数字精灵的位置"""
         for i, digit in enumerate(self.digit_list):
             digit.rect = digit.image.get_rect()
             digit.rect.x = self.x + (i * 10)
@@ -85,7 +91,7 @@ class Score(object):
 
 
     def update(self, score_list, level_info):
-        """Updates score movement"""
+        """更新分数位置（上浮）"""
         for number in self.digit_list:
             number.rect.y += self.y_vel
 
@@ -98,13 +104,13 @@ class Score(object):
 
 
     def draw(self, screen):
-        """Draws score numbers onto screen"""
+        """绘制分数到屏幕"""
         for digit in self.digit_list:
             screen.blit(digit.image, digit.rect)
 
 
     def check_to_delete_floating_scores(self, score_list, level_info):
-        """Check if scores need to be deleted"""
+        """检查并移除超时的浮动分数"""
         for i, score in enumerate(score_list):
             if int(score.score_string) == 1000:
                 if (score.y - score.digit_list[0].rect.y) > 130:

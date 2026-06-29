@@ -1,3 +1,9 @@
+"""
+加载与过渡状态模块
+
+包含 LoadScreen、GameOver、TimeOut 三个状态类。
+"""
+
 from .. import setup, tools
 from .. import constants as c
 from .. import game_sound
@@ -5,6 +11,7 @@ from ..components import info
 
 
 class LoadScreen(tools._State):
+    """加载界面：显示关卡信息和生命数"""
     def __init__(self):
         tools._State.__init__(self)
 
@@ -21,16 +28,16 @@ class LoadScreen(tools._State):
 
 
     def set_next_state(self):
-        """Sets the next state"""
+        """设置下一个状态"""
         return c.LEVEL1
 
     def set_overhead_info_state(self):
-        """sets the state to send to the overhead info object"""
+        """设置传递给HUD的状态"""
         return c.LOAD_SCREEN
 
 
     def update(self, surface, keys, current_time):
-        """Updates the loading screen"""
+        """更新加载界面显示"""
         if (current_time - self.start_time) < 2400:
             surface.fill(c.BLACK)
             self.overhead_info.update(self.game_info)
@@ -49,17 +56,17 @@ class LoadScreen(tools._State):
 
 
 class GameOver(LoadScreen):
-    """A loading screen with Game Over"""
+    """游戏结束界面"""
     def __init__(self):
         super(GameOver, self).__init__()
 
 
     def set_next_state(self):
-        """Sets next state"""
+        """设置下一个状态"""
         return c.MAIN_MENU
 
     def set_overhead_info_state(self):
-        """sets the state to send to the overhead info object"""
+        """设置传递给HUD的状态"""
         return c.GAME_OVER
 
     def update(self, surface, keys, current_time):
@@ -79,12 +86,12 @@ class GameOver(LoadScreen):
 
 
 class TimeOut(LoadScreen):
-    """Loading Screen with Time Out"""
+    """时间耗尽界面"""
     def __init__(self):
         super(TimeOut, self).__init__()
 
     def set_next_state(self):
-        """Sets next state"""
+        """设置下一个状态"""
         if self.persist[c.LIVES] == 0:
             return c.GAME_OVER
         else:

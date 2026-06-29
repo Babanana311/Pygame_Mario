@@ -1,3 +1,15 @@
+"""
+游戏常量定义模块
+
+包含：
+- 屏幕尺寸与缩放
+- 物理常量（重力、跳跃速度等）
+- 角色/敌人/关卡状态字符串
+- 道具/方块内容物类型
+- 音效状态
+"""
+
+# ---- 屏幕尺寸 ----
 SCREEN_HEIGHT = 600
 SCREEN_WIDTH = 800
 
@@ -5,7 +17,7 @@ SCREEN_SIZE = (SCREEN_WIDTH,SCREEN_HEIGHT)
 
 ORIGINAL_CAPTION = "Super Mario Bros 1-1"
 
-## COLORS ##
+# ---- 颜色定义 ----
 
 #            R    G    B
 GRAY         = (100, 100, 100)
@@ -27,28 +39,28 @@ GOLD         = (255, 215,   0)
 
 BGCOLOR = WHITE
 
+# ---- 缩放倍率 ----
 SIZE_MULTIPLIER = 2.5
 BRICK_SIZE_MULTIPLIER = 2.69
 BACKGROUND_MULTIPLER = 2.679
 GROUND_HEIGHT = SCREEN_HEIGHT - 62
 
-#MARIO FORCES
-WALK_ACCEL = .15
-RUN_ACCEL = 20
-SMALL_TURNAROUND = .35
+# ---- 物理常量 ----
+WALK_ACCEL = .15           # 行走加速度
+RUN_ACCEL = 20             # 奔跑加速度
+SMALL_TURNAROUND = .35     # 小马里奥转向减速
 
-GRAVITY = 1.01
-JUMP_GRAVITY = .31
-JUMP_VEL = -12
-FAST_JUMP_VEL = -12.5
-MAX_Y_VEL = 11
+GRAVITY = 1.01             # 正常重力
+JUMP_GRAVITY = .31         # 跳跃时重力（按住跳跃键时使用）
+JUMP_VEL = -12             # 跳跃初速度（负值向上）
+FAST_JUMP_VEL = -12.5      # 快速跳跃初速度
+MAX_Y_VEL = 11             # 最大下落速度
 
-MAX_RUN_SPEED = 800
-MAX_WALK_SPEED = 6
+MAX_RUN_SPEED = 800        # 最大奔跑速度
+MAX_WALK_SPEED = 6         # 最大行走速度
 
 
-#Mario States
-
+# ---- Mario 状态 ----
 STAND = 'standing'
 WALK = 'walk'
 JUMP = 'jump'
@@ -61,46 +73,38 @@ WALKING_TO_CASTLE = 'walking to castle'
 END_OF_LEVEL_FALL = 'end of level fall'
 
 
-#GOOMBA Stuff
-
+# ---- 敌人方向与状态 ----
 LEFT = 'left'
 RIGHT = 'right'
 JUMPED_ON = 'jumped on'
 DEATH_JUMP = 'death jump'
 
-#KOOPA STUFF
-
+# ---- 乌龟龟壳状态 ----
 SHELL_SLIDE = 'shell slide'
 
-#BRICK STATES
-
+# ---- 砖块状态 ----
 RESTING = 'resting'
 BUMPED = 'bumped'
 
-#COIN STATES
+# ---- 问号方块状态 ----
 OPENED = 'opened'
 
-#MUSHROOM STATES
-
+# ---- 蘑菇道具状态 ----
 REVEAL = 'reveal'
 SLIDE = 'slide'
 
-#COIN STATES
-
+# ---- 金币状态 ----
 SPIN = 'spin'
 
-#STAR STATES
-
+# ---- 星星道具状态 ----
 BOUNCE = 'bounce'
 
-#FIRE STATES
-
+# ---- 火球状态 ----
 FLYING = 'flying'
 BOUNCING = 'bouncing'
 EXPLODING = 'exploding'
 
-#Brick and coin box contents
-
+# ---- 砖块/问号方块内容物类型 ----
 MUSHROOM = 'mushroom'
 STAR = 'star'
 FIREFLOWER = 'fireflower'
@@ -110,31 +114,29 @@ LIFE_MUSHROOM = '1up_mushroom'
 
 FIREBALL = 'fireball'
 
-#LIST of ENEMIES
-
+# ---- 敌人类型 ----
 GOOMBA = 'goomba'
 KOOPA = 'koopa'
 
-#LEVEL STATES
+# ---- 关卡内部状态 ----
+FROZEN = 'frozen'                          # 冻结（过场动画中）
+NOT_FROZEN = 'not frozen'                  # 正常游戏状态
+IN_CASTLE = 'in castle'                   # 进入城堡
+FLAG_AND_FIREWORKS = 'flag and fireworks'  # 旗杆和烟花
 
-FROZEN = 'frozen'
-NOT_FROZEN = 'not frozen'
-IN_CASTLE = 'in castle'
-FLAG_AND_FIREWORKS = 'flag and fireworks'
-
-#FLAG STATE
+# ---- 旗杆状态 ----
 TOP_OF_POLE = 'top of pole'
 SLIDE_DOWN = 'slide down'
 BOTTOM_OF_POLE = 'bottom of pole'
 
-#1UP score
+# ---- 1UP 分数标记 ----
 ONEUP = '379'
 
-#MAIN MENU CURSOR STATES
+# ---- 主菜单光标状态 ----
 PLAYER1 = '1 player'
 PLAYER2 = '2 player'
 
-#OVERHEAD INFO STATES
+# ---- OverheadInfo 显示状态 ----
 MAIN_MENU = 'main menu'
 LOAD_SCREEN = 'loading screen'
 LEVEL = 'level'
@@ -143,7 +145,7 @@ FAST_COUNT_DOWN = 'fast count down'
 END_OF_LEVEL = 'end of level'
 
 
-#GAME INFO DICTIONARY KEYS
+# ---- game_info 字典键名 ----
 COIN_TOTAL = 'coin total'
 SCORE = 'score'
 TOP_SCORE = 'top score'
@@ -153,23 +155,17 @@ LEVEL_STATE = 'level state'
 CAMERA_START_X = 'camera start x'
 MARIO_DEAD = 'mario dead'
 
-#STATES FOR ENTIRE GAME
+# ---- 游戏全局状态 ----
 MAIN_MENU = 'main menu'
 LOAD_SCREEN = 'load screen'
 TIME_OUT = 'time out'
 GAME_OVER = 'game over'
 LEVEL1 = 'level1'
 
-#SOUND STATEZ
+# ---- 音效状态 ----
 NORMAL = 'normal'
 STAGE_CLEAR = 'stage clear'
 WORLD_CLEAR = 'world clear'
 TIME_WARNING = 'time warning'
 SPED_UP_NORMAL = 'sped up normal'
 MARIO_INVINCIBLE = 'mario invincible'
-
-
-
-
-
-

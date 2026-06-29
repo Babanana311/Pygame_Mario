@@ -1,10 +1,16 @@
+"""
+闪烁金币模块
+
+HUD中金币总数旁边的闪烁金币动画。
+"""
+
 import pygame as pg
 from .. import setup
 from .. import constants as c
 
 
 class Coin(pg.sprite.Sprite):
-    """Flashing coin next to coin total info"""
+    """闪烁金币：HUD中金币图标动画"""
     def __init__(self, x, y):
         super(Coin, self).__init__()
         self.sprite_sheet = setup.GFX['item_objects']
@@ -19,7 +25,7 @@ class Coin(pg.sprite.Sprite):
 
 
     def create_frames(self):
-        """Extract coin images from sprite sheet and assign them to a list"""
+        """从精灵表中提取金币帧并存入列表"""
         self.frames = []
         self.frame_index = 0
 
@@ -29,7 +35,7 @@ class Coin(pg.sprite.Sprite):
 
 
     def get_image(self, x, y, width, height):
-        """Extracts image from sprite sheet"""
+        """从精灵表中提取图片"""
         image = pg.Surface([width, height])
         rect = image.get_rect()
 
@@ -42,7 +48,7 @@ class Coin(pg.sprite.Sprite):
 
 
     def update(self, current_time):
-        """Animates flashing coin"""
+        """闪烁金币动画更新"""
         if self.first_half:
             if self.frame_index == 0:
                 if (current_time - self.timer) > 375:
